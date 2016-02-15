@@ -1,0 +1,16 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block extrahead %}
+{% load static from staticfiles %}
+    <script type="text/javascript" src="{% static 'pawnbroking/kendo/js/jquery.min.js' %}"></script>
+    {% include 'autocomplete_light/static.html' %}
+{% endblock %}
+
+{% block title %}{{ title }} | {% trans 'Sri Selva Vinayakar Bankers Admin' %}{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">{% trans 'Sri Selva Vinayakar Bankers' %}</h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

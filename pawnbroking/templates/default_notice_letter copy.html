@@ -1,0 +1,75 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"   
+    "http://www.w3.org/TR/html4/loose.dtd">  
+<html>  
+<head>   
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">  
+
+<!-- http://www.printernational.org/iso-paper-sizes.php     A4 '595 pt x 842 pt', Letter ~ '590pt x 792pt'. -->
+<style type="text/css">   
+
+@page body {
+    size: letter landscape;
+    @frame to_frame {
+        left: 550pt;
+        width: 200pt;
+        top: 100pt;
+        height: 170pt;
+    }
+}
+
+@page pledge_detail_page {
+    size: letter portrait;
+    @frame content_frame {
+        left: 115pt;
+        width: 495pt;
+        top: 330pt;
+        height: 742pt;
+    }
+}
+  
+html, body, table, caption, tbody, tfoot, thead, tr, th, td {  
+    font-family: "Times New Roman";  
+    font-size: 25px;
+}
+
+</style>  
+</head>
+  
+<body>
+
+    {% for cust, pledges in cust_and_pledges.items %}
+        
+    <div id = "to_content">
+         <b>{{cust.name|title}}</b></br>
+        S/O or W/O {{cust.father_or_husband_name|title}}</br>
+        {{cust.address|title}}</br>
+        {{cust.town.name|title}}</br>
+        {% if cust.town.post %}
+            POST: {{cust.town.post|title}}</br>
+        {% endif %}
+        {% if cust.town.pincode %}
+            <b>{{cust.town.pincode}}</b>
+        {% endif %}
+    </div>
+
+    <pdf:nexttemplate name="pledge_detail_page"/>  
+    <pdf:nextpage/>
+   
+    <table cellpadding="3" cellspacing="9" width="80%">
+      {% for pledge in pledges %}
+      <tr>
+        <td align="center">{{pledge.pledge_no}}</td>
+        <td align="center">{{pledge.loan_date}}</td>
+        <td align="center">{{pledge.principle}}</td>
+      </tr>
+      {% endfor %}
+      </table>
+      
+    <pdf:nexttemplate name="body"/>
+     <pdf:nextpage/>
+      
+    {% endfor %}
+    
+</body>  
+</html>  

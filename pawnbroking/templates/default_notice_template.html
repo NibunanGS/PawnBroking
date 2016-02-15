@@ -1,0 +1,126 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"   
+    "http://www.w3.org/TR/html4/loose.dtd">  
+<html>  
+<head>   
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">  
+
+<!-- http://www.printernational.org/iso-paper-sizes.php     A4 '595 pt x 842 pt'-->
+<style type="text/css">   
+
+@page body {
+    size: a4 portrait;
+    @frame top_frame {
+    	-pdf-frame-content: top_content;
+        left: 5pt;
+        width: 585pt;
+        top: 280pt;
+        height: 30pt;
+        -pdf-frame-border: -1;
+    }
+    @frame from_frame {
+    	-pdf-frame-content: from_content;
+        left: 50pt;
+        width: 250pt;
+        top: 310pt;
+        height: 230pt;
+        -pdf-frame-border: -1;
+    }
+    @frame to_frame {
+        left: 300pt;
+        width: 245pt;
+        top: 310pt;
+        height: 230pt;
+        -pdf-frame-border: -1;
+    }
+}
+
+@page pledge_detail_page {
+    size: a4 portrait;
+    @frame content_frame {
+        left: 50pt;
+        width: 495pt;
+        top: 50pt;
+        height: 742pt;
+        -pdf-frame-border: -1;    /* for debugging the layout */
+    }
+}
+  
+html, body, table, caption, tbody, tfoot, thead, tr, th, td {  
+    font-family: "Times New Roman";  
+    font-size: 16px;
+}
+
+table.topContentCSS{
+	font-size: 10px;
+}
+
+</style>  
+</head>
+  
+<body>
+
+	{% for cust, pledges in cust_and_pledges.items %}
+	<div id = "top_content">
+	<table class="topContentCSS">
+		<tr><td align="left">----Fold Here----</td>
+		<td align="right">----Fold Here----</td></tr>
+	</table>
+	</div>
+    	
+	<div id = "from_content">
+		<b>From:</b></br>
+	 	<b>Sri Selva Vinayakar Bankers</b></br>
+		107, Bazaar Street,</br>
+		Sankarapuram</br>
+		PINCODE:<b>606401</b>
+	</div>
+	
+	<div id = "to_content">
+		<b>To:</b></br>
+	 	<b>{{cust.name|title}}</b></br>
+		S/O or W/O {{cust.father_or_husband_name|title}}</br>
+		{{cust.address|title}}</br>
+		{{cust.town.name|title}}</br>
+		{% if cust.town.post %}
+			POST: {{cust.town.post|title}}</br>
+		{% endif %}
+		{% if cust.town.pincode %}
+			PINCODE:<b>{{cust.town.pincode}}</b>
+		{% endif %}
+	</div>
+
+	<pdf:nexttemplate name="pledge_detail_page"/>  
+	<pdf:nextpage/>
+   
+    <h1 align="center">Sri Selva Vinayakar Bankers</h1>
+ 	<hr style="margin: 3em 0;"/>
+ 	
+   	<table>
+    	<tr><th align="left">First Remainder:-</th><th>Date: <u>{{notice_date}}</th></tr>
+    </table>
+    
+    <p>
+    	We are writing in reference to the below mentioned pledges. We are asking you remit/renew the pledges by {{grace_date}}. If we do not receive a response from you by this day, the items will be auctioned.
+    </p> 
+    
+    <table cellpadding="3" cellspacing="9" width="80%">
+	    <caption><b>Details of the pledges to be renewed/redempted</b></caption>  
+	  <tr style="border: 1px solid #000000;">
+	    <th>PledgeNo</th><th>Date</th><th>Amount</th>
+	  </tr>
+	  {% for pledge in pledges %}
+	  <tr style="border: 1px solid #000000;">
+	    <td align="center">{{pledge.pledge_no}}</td>
+	    <td align="center">{{pledge.loan_date}}</td>
+	    <td align="center">{{pledge.principle}}</td>
+	  </tr>
+	  {% endfor %}
+  	</table>
+  	
+ 	<pdf:nextpage/>
+  	
+	{% endfor %}
+	
+</body>  
+</html>  

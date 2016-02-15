@@ -1,0 +1,211 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+
+{% block extrahead %}
+	{{ block.super }}
+	{% load static from staticfiles %}
+	<link href="{% static 'pawnbroking/kendo/styles/kendo.common.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'pawnbroking/kendo/styles/kendo.default.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'pawnbroking/kendo/styles/kendo.dataviz.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'pawnbroking/kendo/styles/kendo.dataviz.default.min.css' %}" rel="stylesheet" type="text/css" />
+    
+    <script type="text/javascript" src="{% static 'pawnbroking/kendo/js/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'pawnbroking/kendo/js/kendo.all.min.js' %}"></script>
+    
+{% endblock %}
+
+{% block field_sets %}
+	{{ block.super }}
+
+ 	<div id="customerGrid"></div>
+ 	<script type="text/x-kendo-template" id="template">
+        <div class="toolbar">
+            <span><B><span id="NoOfCustomer">0</span></B> Customers</span>
+        </div>
+    </script>
+
+{% endblock %}
+
+
+{% block submit_buttons_bottom %}
+	{{block.super}}
+	
+<script type="text/javascript">
+function download_notices() {
+  	download('/pawnbroking/generate_auction_notice/',{from_date: $('#id_from_date').val(),to_date: $('#id_to_date').val(), 
+  		grace_date: $('#id_grace_date').val(), csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()});
+  	
+  	return false;
+}
+
+function download(url, data){
+	//url and data options required
+    if( url && data ){
+        //data can be string of parameters or array/object
+        data = typeof data == 'string' ? data : jQuery.param(data);
+        //split params into form inputs
+        var inputs = '';
+        jQuery.each(data.split('&'), function(){
+            var pair = this.split('=');
+            inputs+='<input type="hidden" name="'+ pair[0] +'" value="'+ pair[1] +'" />';
+        });
+        //send request
+        jQuery('<form id="dummy" action="'+ url +'" method="post">'+inputs+'</form>').appendTo('body').submit().remove();
+    };
+};
+
+$().ajaxStart(function(){
+   $('body').css('cursor', 'wait');
+});
+
+$().ajaxStop(function(){
+   $('body').css('cursor', 'auto');
+});
+
+$(window).load(function() {
+    var anchorTags = $("a");
+    anchorTags.each(function(){
+   		$(this).attr('tabindex',-1);
+	});
+});
+
+$(document).ready(function () {
+	// Add the download button to submit row...
+	$('<input type="submit" value="Download Notices" name="val_download_notices" onclick="return download_notices()"/>')
+        .prependTo('div.submit-row');
+
+    // create grid
+    $("#customerGrid").kendoGrid(
+    {
+    	toolbar: kendo.template($("#template").html()),
+        width: '100%',
+        resizable: true,
+        scrollable: false,
+        sortable: true,
+        selectable: "row",
+        navigatable: true,
+        filterable: true,
+        pageable: {
+                refresh: true,
+                pageSizes: true,
+                numeric: false,
+                input: true
+            },
+        detailInit: detailInit,
+        columns: [
+	        { title: 'G', field: 'related', width: '2%', groupable: false, filterable: false},
+        	{ title: 'Pledge', field: 'pledge_no', width: '8%', groupable: false, filterable: false },
+        	{ title: 'Date', field: 'loan_date', width: '8%', groupable: false, filterable: false },
+        	{ title: 'Principle', field: 'principle', width: '8%', groupable: false, filterable: false },
+            { title: 'Name', field: 'name', width: '11%', groupable: false, filterable: false },
+	        { title: 'F/H Name', field: 'father_or_husband_name', width: '11%', groupable: false, filterable: false },
+	        { title: 'Town', field: 'town', width: '10%', filterable: true},
+	        { title: 'Address', field: 'address', width: '42%', groupable: false, filterable: false},
+        ],
+        editable: true,
+        save: function(e) {
+		    if (e.values.address) {
+		    	id = e.model.cust_id;
+				
+				$.ajax({
+	                url: '/pawnbroking/save_customer_address/',
+	                type: 'POST',
+	                dataType: "json",
+	                beforeSend: function (request) {
+	                    request.setRequestHeader("X-CSRFToken", $('input[name="csrfmiddlewaretoken"]').val());
+	                },
+	                data: {cust_id: id, address: e.values.address},
+            	}).done(function() {
+            		var grid = $("#customerGrid").data("kendoGrid");
+            		
+	          		for(var i = 0; i < e.model.pledges.length; i++) {
+	          			pledge = e.model.pledges[i];
+						if (e.model.pledge_no != pledge.pledge_no) {
+							var data = grid.dataSource.at(pledge.index);
+							data.set("address", e.values.address);
+						}
+					}
+				});
+		    }
+		  },
+    });
+    
+    function detailInit(e) {
+        $("<div/>").appendTo(e.detailCell).kendoGrid({
+            scrollable: false,
+            columns: [
+                { title: 'Pledge NO', field: 'pledge_no', width: '25%'},
+                { title: 'Loan Date', field: 'loan_date', width: '25%'},
+                { title: 'Principle', field: 'principle', width: '25%' },
+                { title: 'Net Weight', field: 'net_weight', width: '25%'},
+            ],
+            dataSource:{
+			    data: e.data.pledges,
+			    schema: {
+			        model: {
+			            fields: {
+			                pledge_no: {type: 'string' },
+            				loan_date: {type: 'string' },
+            				principle: {type: 'int' },
+            				net_weight: {type: 'string' },
+			            }
+			        }
+			    }
+			}
+        });
+    }
+    
+    function populatePledges() {
+    	if($('#id_from_date').val() && $('#id_to_date').val()){
+    		kendo.ui.progress($("#customerGrid"), true);
+    	
+			$.get( "/pawnbroking/get_pledges_for_auction/", {from_date: $('#id_from_date').val(), to_date: $('#id_to_date').val()}, function( data ) {
+				json = $.parseJSON(data);
+			
+				var grid = $("#customerGrid").data("kendoGrid");
+				var dataSource = new kendo.data.DataSource({
+				    data: json.pledges,
+				    pageSize: 10,
+				    schema: {
+				    	id: "cust_id",
+				    	model: {
+				            fields: {
+				            	cust_id: { editable: false, type: "number"},
+				            	pledge_no: {type: 'string', editable: false  },
+		            			loan_date: {type: 'string', editable: false },
+		            			principle: {type: 'int', editable: false  },
+				                name: { type: "string", editable: false },
+				                father_or_husband_name: { editable: false, type: "string" },
+				                town: { editable: false, type: "string" },
+				                address: { editable: true, type: "string"},
+				                related: { editable: false, type: "number"}
+				            }
+				        },
+				    },
+				});
+				
+				grid.setDataSource(dataSource);
+				
+				//$('span#NoOfCustomer').innerHTML=json.no_of_customers
+				document.getElementById("NoOfCustomer").innerHTML=json.no_of_customers
+				
+				kendo.ui.progress($("#customerGrid"), false);
+			});
+		}
+	}
+	
+	$("#id_from_date").change(function(){populatePledges()});
+    $("#id_to_date").change(function(){populatePledges()});
+	
+	$(document.body).keydown(function(e) {
+        if (e.altKey && e.keyCode == 87) {
+            $("#customerGrid").data("kendoGrid").table.focus();
+        }
+    });
+    
+    populatePledges();
+});
+
+</script>
+
+{% endblock %}

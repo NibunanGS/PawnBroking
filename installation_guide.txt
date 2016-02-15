@@ -1,0 +1,23 @@
+1) Install PIP:
+	Refer: https://pip.pypa.io/en/latest/installing.html
+	
+2) cd to the dependencies directory...
+	execute: 'pip install --no-index --find-links=/local/wheels -r requirements.txt' or 
+				
+	On Windows: 'python -m pip install --no-index --find-links=wheels -r requirements.txt'
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+Upgrade Steps:
+
+1) python manage.py syncdb
+
+2) alter table pawnbroking_city add column "post_id" integer REFERENCES "pawnbroking_city" ("id");

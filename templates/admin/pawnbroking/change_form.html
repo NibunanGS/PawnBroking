@@ -1,0 +1,16 @@
+{% extends "admin/change_form.html" %}
+
+{% block submit_buttons_bottom %}
+	{{block.super}}
+
+<script type="text/javascript">
+$(window).load(function() {
+    var anchorTags = $("a");
+    anchorTags.each(function(){
+   		$(this).attr('tabindex',-1);
+	});
+	
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,94 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"   
+  "http://www.w3.org/TR/html4/loose.dtd">  
+<html>  
+<head>   
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">  
+
+  <!-- http://www.printernational.org/iso-paper-sizes.php     A4 '595 pt x 842 pt'-->
+  <!-- https://github.com/xhtml2pdf/xhtml2pdf/blob/master/doc/usage.rst -->
+  <style type="text/css">   
+
+    @page body {
+
+      background-image: url('/Users/i073185/Work/Projects/Personal/mybusiness/pawnbroking/templates/FirstNoticeTemplate.jpg');
+      size: a4 portrait;
+
+      @frame address_frame {
+       left: 310pt;
+       width: 250pt;
+       top: 115pt;
+       height: 130pt;
+     }
+
+     @frame date_frame {
+       -pdf-frame-content: date_info;
+       left: 50pt;
+       width: 460pt;
+       top: 415pt;
+       height: 20pt;
+     }
+
+     @frame details_frame {
+       left: 42pt;
+       width: 515pt;
+       top: 615pt;
+       height: 200pt;
+     }
+   }
+
+   html, body, table, caption, tbody, tfoot, thead, tr, th, td {  
+     font-family: "Cambria";  
+     font-size: 16px;
+     -pdf-keep-with-next: false;
+   }
+
+
+ </style>  
+</head>
+
+<body>
+
+  {% for cust, pledges in cust_and_pledges.items %}
+  
+  <div id= "address_info">
+    <table cellpadding="4" cellspacing="9" width="100%">
+      <tr><td>{{cust.name|title}}</td></tr>
+      <tr><td>S/O or W/O {{cust.father_or_husband_name|title}}</td></tr>
+      <tr><td>{{cust.address|title}}</td></tr>
+      <tr><td>{{cust.town.name|title}}</td></tr>
+      <tr><td>
+        {% if cust.town.post %}
+        <b>POST: </b>{{cust.town.post|title}}, 
+        {% endif %}
+        {% if cust.town.pincode %}
+        <b>PINCODE: </b>{{cust.town.pincode}}
+        {% endif %}
+      </td></tr>
+    </table>
+    <p class="separator">&nbsp;<p>
+    </div> 
+
+    <div id = "date_info">
+      <table>
+       <tr><th align="left"> <pdf:pagenumber> </th> <th align="right"> {{notice_date}} </th></tr>
+     </table>
+   </div> 
+
+
+   <table>
+    {% for pledge in pledges %}
+    <tr>
+      <td align="center">{{pledge.pledge_no}}</td>
+      <td align="center">{{pledge.loan_date}}</td>
+      <td align="center">{{pledge.principle}}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  
+  <pdf:nextpage/>
+
+  {% endfor %}
+
+</body>  
+</html>  
